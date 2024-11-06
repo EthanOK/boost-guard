@@ -2,6 +2,7 @@ use axum::routing::{get, post};
 use axum::{Extension, Router};
 use boost_guard::routes::{handle_create_vouchers, handle_get_rewards, handle_health, handle_root};
 use mysql_async::Pool;
+use tower_http::cors::{CorsLayer,Any};
 use std::env;
 use std::net::SocketAddr;
 use std::str::FromStr;
@@ -45,7 +46,11 @@ fn app() -> Router {
         pool,
         wallet,
     };
-
+    let cors = CorsLayer::new()
+        .allow_origin(Any) 
+        .allow_methods(Any) 
+        .allow_headers(Any);
+      
     Router::new()
         .route("/create-vouchers", post(handle_create_vouchers))
         .route("/get-rewards", post(handle_get_rewards))
@@ -56,6 +61,7 @@ fn app() -> Router {
         .route("/health", get(handle_health))
         .route("/", get(handle_root))
         .layer(Extension(state))
+        .layer(cors)
 }
 
 #[cfg(test)]
